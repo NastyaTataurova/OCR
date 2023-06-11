@@ -1,0 +1,4 @@
+matplotlib==3.7.1
+torch==2.0.1+cu117
+torchvision==0.15.2
+tqdm==4.64.0
