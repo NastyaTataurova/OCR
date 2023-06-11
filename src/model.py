@@ -41,9 +41,6 @@ class CRNN(nn.Module):
                 nn.MaxPool2d(kernel_size=pool_kernels[i], stride=pool_strides[i])       
             )
         return cnn
-    
-    def Transcription_layer(self, ):
-        ...
 
     def forward(self, images):
         # convolutional layers, which extract a feature sequence from the input image

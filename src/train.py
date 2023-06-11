@@ -7,7 +7,6 @@ from tqdm import tqdm
 
 from dataset import CapchaDataset
 from model import CRNN
-# from ctc_decoder import ctc_decode
 
 
 def train_model(model, num_epochs, train_loader, valid_loader, optimizer, criterion, device):
@@ -24,17 +23,8 @@ def train_model(model, num_epochs, train_loader, valid_loader, optimizer, criter
             batch_size = images.size(0)
             input_lengths = torch.LongTensor([pred.size(0)] * batch_size)
             pred = torch.nn.functional.log_softmax(pred, dim=2)
-
-            
             target_lengths = torch.flatten(target_lengths)
             loss = criterion(pred, targets, input_lengths, target_lengths)
-            # logits = model(images)
-            # log_probs = torch.nn.functional.log_softmax(logits, dim=2)
-
-            # batch_size = images.size(0)
-            # input_lengths = torch.LongTensor([logits.size(0)] * batch_size)
-
-            # loss = criterion(log_probs, targets, input_lengths, target_lengths)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -54,7 +44,6 @@ def train_model(model, num_epochs, train_loader, valid_loader, optimizer, criter
             eval_count = 0
             eval_loss = 0
             eval_correct = 0
-
             with torch.no_grad():
                 for data in valid_loader:
                     images, targets = data[0].to(device), data[1].to(device)
@@ -63,12 +52,9 @@ def train_model(model, num_epochs, train_loader, valid_loader, optimizer, criter
                     batch_size = images.size(0)
                     input_lengths = torch.LongTensor([preds.size(0)] * batch_size)
                     preds = torch.nn.functional.log_softmax(preds, dim=2).cpu()       
-                    
-                    
                     loss = criterion(preds, targets, input_lengths, target_lengths)
                     eval_count += batch_size
-                    eval_loss += loss.item()
-                    
+                    eval_loss += loss.item()                    
                     targets = targets.cpu().numpy().tolist()
                     target_lengths = target_lengths.cpu().numpy().tolist()
                     preds = np.transpose(preds.cpu().numpy(), (1, 0, 2))
@@ -87,7 +73,6 @@ def train_model(model, num_epochs, train_loader, valid_loader, optimizer, criter
                         if len(prediction) == len(target):
                             if (np.array(prediction) == np.array(target)).all():
                                 eval_correct += 1
-
             loss = eval_loss / eval_count
             accuracy = eval_correct / eval_count
             print(f'epoch {epoch} - valid: loss={loss}, accuracy={accuracy}')
@@ -116,7 +101,6 @@ if __name__ == '__main__':
                 rnn_hidden=256)
     model.to(device)
     optimizer = optim.RMSprop(model.parameters(), lr=lr)
-    # criterion = CTCLoss(reduction='sum', zero_infinity=True, blank=10)
     criterion = CTCLoss(blank=10)
     criterion.to(device)
     train_model(model, num_epochs, train_loader, valid_loader, optimizer, criterion, device)
